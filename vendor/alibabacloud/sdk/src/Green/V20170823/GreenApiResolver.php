@@ -36,6 +36,7 @@ use AlibabaCloud\Client\Resolver\ApiResolver;
  * @method DescribeKeyword describeKeyword(array $options = [])
  * @method DescribeKeywordLib describeKeywordLib(array $options = [])
  * @method DescribeNotificationSetting describeNotificationSetting(array $options = [])
+ * @method DescribeOpenApiRcpStats describeOpenApiRcpStats(array $options = [])
  * @method DescribeOpenApiUsage describeOpenApiUsage(array $options = [])
  * @method DescribeOssCallbackSetting describeOssCallbackSetting(array $options = [])
  * @method DescribeOssIncrementCheckSetting describeOssIncrementCheckSetting(array $options = [])
@@ -46,6 +47,7 @@ use AlibabaCloud\Client\Resolver\ApiResolver;
  * @method DescribeSdkUrl describeSdkUrl(array $options = [])
  * @method DescribeUpdatePackageResult describeUpdatePackageResult(array $options = [])
  * @method DescribeUploadInfo describeUploadInfo(array $options = [])
+ * @method DescribeUsageBill describeUsageBill(array $options = [])
  * @method DescribeUserBizTypes describeUserBizTypes(array $options = [])
  * @method DescribeUserStatus describeUserStatus(array $options = [])
  * @method DescribeViewContent describeViewContent(array $options = [])
@@ -58,6 +60,7 @@ use AlibabaCloud\Client\Resolver\ApiResolver;
  * @method DescribeWebsiteStat describeWebsiteStat(array $options = [])
  * @method DescribeWebsiteVerifyInfo describeWebsiteVerifyInfo(array $options = [])
  * @method ExportKeywords exportKeywords(array $options = [])
+ * @method ExportOpenApiRcpStats exportOpenApiRcpStats(array $options = [])
  * @method ExportOssResult exportOssResult(array $options = [])
  * @method ImportKeywords importKeywords(array $options = [])
  * @method MarkAuditContent markAuditContent(array $options = [])
@@ -75,7 +78,9 @@ use AlibabaCloud\Client\Resolver\ApiResolver;
  * @method UpdateAuditCallback updateAuditCallback(array $options = [])
  * @method UpdateAuditRange updateAuditRange(array $options = [])
  * @method UpdateAuditSetting updateAuditSetting(array $options = [])
+ * @method UpdateBizTypeImageLib updateBizTypeImageLib(array $options = [])
  * @method UpdateBizTypeSetting updateBizTypeSetting(array $options = [])
+ * @method UpdateBizTypeTextLib updateBizTypeTextLib(array $options = [])
  * @method UpdateCustomOcrTemplate updateCustomOcrTemplate(array $options = [])
  * @method UpdateImageLib updateImageLib(array $options = [])
  * @method UpdateKeywordLib updateKeywordLib(array $options = [])
@@ -131,6 +136,8 @@ class CreatCustomOcrTemplate extends Rpc
 /**
  * @method string getBizTypeImport()
  * @method $this withBizTypeImport($value)
+ * @method string getCiteTemplate()
+ * @method $this withCiteTemplate($value)
  * @method string getSourceIp()
  * @method $this withSourceIp($value)
  * @method string getIndustryInfo()
@@ -575,6 +582,22 @@ class DescribeNotificationSetting extends Rpc
  * @method $this withStartDate($value)
  * @method string getResourceType()
  * @method $this withResourceType($value)
+ * @method string getBizType()
+ * @method $this withBizType($value)
+ * @method string getEndDate()
+ * @method $this withEndDate($value)
+ * @method string getSourceIp()
+ * @method $this withSourceIp($value)
+ */
+class DescribeOpenApiRcpStats extends Rpc
+{
+}
+
+/**
+ * @method string getStartDate()
+ * @method $this withStartDate($value)
+ * @method string getResourceType()
+ * @method $this withResourceType($value)
  * @method string getEndDate()
  * @method $this withEndDate($value)
  * @method string getSourceIp()
@@ -635,6 +658,8 @@ class DescribeOssIncrementStats extends Rpc
  * @method $this withMinScore($value)
  * @method string getMaxScore()
  * @method $this withMaxScore($value)
+ * @method string getStockTaskId()
+ * @method $this withStockTaskId($value)
  * @method string getStartDate()
  * @method $this withStartDate($value)
  * @method string getScene()
@@ -717,6 +742,24 @@ class DescribeUploadInfo extends Rpc
 }
 
 /**
+ * @method string getTotalCount()
+ * @method $this withTotalCount($value)
+ * @method string getCurrentPage()
+ * @method $this withCurrentPage($value)
+ * @method string getType()
+ * @method $this withType($value)
+ * @method string getSourceIp()
+ * @method $this withSourceIp($value)
+ * @method string getPageSize()
+ * @method $this withPageSize($value)
+ * @method string getDay()
+ * @method $this withDay($value)
+ */
+class DescribeUsageBill extends Rpc
+{
+}
+
+/**
  * @method string getCustomized()
  * @method $this withCustomized($value)
  * @method string getSourceIp()
@@ -751,6 +794,8 @@ class DescribeUserStatus extends Rpc
  * @method $this withAuditResult($value)
  * @method string getPageSize()
  * @method $this withPageSize($value)
+ * @method string getKeyword()
+ * @method $this withKeyword($value)
  * @method string getTaskId()
  * @method $this withTaskId($value)
  * @method string getTotalCount()
@@ -901,10 +946,28 @@ class ExportKeywords extends Rpc
 }
 
 /**
+ * @method string getStartDate()
+ * @method $this withStartDate($value)
+ * @method string getResourceType()
+ * @method $this withResourceType($value)
+ * @method string getBizType()
+ * @method $this withBizType($value)
+ * @method string getEndDate()
+ * @method $this withEndDate($value)
+ * @method string getSourceIp()
+ * @method $this withSourceIp($value)
+ */
+class ExportOpenApiRcpStats extends Rpc
+{
+}
+
+/**
  * @method string getMinScore()
  * @method $this withMinScore($value)
  * @method string getMaxScore()
  * @method $this withMaxScore($value)
+ * @method string getStockTaskId()
+ * @method $this withStockTaskId($value)
  * @method string getStartDate()
  * @method $this withStartDate($value)
  * @method string getScene()
@@ -1153,6 +1216,26 @@ class UpdateAuditSetting extends Rpc
 }
 
 /**
+ * @method string getScene()
+ * @method $this withScene($value)
+ * @method string getSourceIp()
+ * @method $this withSourceIp($value)
+ * @method string getWhite()
+ * @method $this withWhite($value)
+ * @method string getReview()
+ * @method $this withReview($value)
+ * @method string getBizTypeName()
+ * @method $this withBizTypeName($value)
+ * @method string getBlack()
+ * @method $this withBlack($value)
+ * @method string getResourceType()
+ * @method $this withResourceType($value)
+ */
+class UpdateBizTypeImageLib extends Rpc
+{
+}
+
+/**
  * @method string getAntispam()
  * @method $this withAntispam($value)
  * @method string getPorn()
@@ -1169,6 +1252,28 @@ class UpdateAuditSetting extends Rpc
  * @method $this withResourceType($value)
  */
 class UpdateBizTypeSetting extends Rpc
+{
+}
+
+/**
+ * @method string getScene()
+ * @method $this withScene($value)
+ * @method string getSourceIp()
+ * @method $this withSourceIp($value)
+ * @method string getWhite()
+ * @method $this withWhite($value)
+ * @method string getReview()
+ * @method $this withReview($value)
+ * @method string getIgnore()
+ * @method $this withIgnore($value)
+ * @method string getBizTypeName()
+ * @method $this withBizTypeName($value)
+ * @method string getBlack()
+ * @method $this withBlack($value)
+ * @method string getResourceType()
+ * @method $this withResourceType($value)
+ */
+class UpdateBizTypeTextLib extends Rpc
 {
 }
 
@@ -1275,6 +1380,8 @@ class UpdateOssCallbackSetting extends Rpc
  * @method $this withVideoFrameInterval($value)
  * @method string getSourceIp()
  * @method $this withSourceIp($value)
+ * @method string getCallbackId()
+ * @method $this withCallbackId($value)
  * @method string getImageScanLimit()
  * @method $this withImageScanLimit($value)
  * @method string getVideoAutoFreezeSceneList()

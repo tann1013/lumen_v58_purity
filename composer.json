@@ -8,15 +8,12 @@
         "php": ">=7.1.3",
         "alibabacloud/sdk": "^1.7",
         "illuminate/redis": "^5.8",
-        "jenssegers/mongodb": "^3.5",
         "laravel/lumen-framework": "5.8.*",
-        "maatwebsite/excel": "^3.1",
         "nesbot/carbon": "^2.35",
         "opis/closure": "^3.5",
         "predis/predis": "^1.1",
         "swooletw/laravel-swoole": "^2.5",
-        "wn/lumen-generators": "^1.3",
-        "xingwenge/canal_php": "^1.0"
+        "wn/lumen-generators": "^1.3"
     },
     "require-dev": {
         "fzaninotto/faker": "^1.4",
