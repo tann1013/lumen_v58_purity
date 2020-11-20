@@ -1,0 +1,290 @@
+<?php
+namespace  DummyNamespace;
+
+use App\ConstDir\BaseConst;
+use App\ConstDir\FinanceConst;
+use App\Exports\InvoicesExport;
+use App\Http\Controllers\BaseController;
+use App\Logics\Api\FinanceLoanLogic;
+use App\Service\Status\LoanType;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
+
+class DummyClass extends BaseController {
+    public $loanLogic;
+
+    public function __construct(Request $request)
+    {
+        parent::__construct($request);
+        $this->loanLogic = new FinanceLoanLogic();
+        $this->platform = FinanceConst::PLATFORM_BOS;
+        $this->users =  Auth::user();
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function create(Request $request){
+        //1 接收参数
+        $inputs['LoanType'] = !empty($request->LoanType) ? $request->LoanType: '';
+        $inputs['AccountMoney'] = !empty($request->AccountMoney) ? $request->AccountMoney: '';
+        $inputs['RongInterest'] = !empty($request->RongInterest) ? $request->RongInterest: 0;
+        $inputs['RongHandFee'] = !empty($request->RongHandFee) ? $request->RongHandFee: 0;
+        $inputs['LoanDate'] = !empty($request->LoanDate) ? $request->LoanDate: '';
+        $inputs['LoanInterest'] = FinanceConst::LOAN_INTERESR;
+        //2020-4-12增加子公司ID和金融机构ID
+        $inputs['ExtCId'] = !empty($request->ExtCId) ? $request->ExtCId: '';
+        $inputs['ExtCName'] = !empty($request->ExtCName) ? $request->ExtCName: '';
+        $inputs['ExtFundSourceId'] = !empty($request->ExtFundSourceId) ? $request->ExtFundSourceId: '';
+        $inputs['ExtFundSourceName'] = !empty($request->ExtFundSourceName) ? $request->ExtFundSourceName: '';
+
+        //2 验证参数
+        if($inputs['LoanType']==LoanType::RONGZI){
+            //use Illuminate\Support\Facades\Validator;
+            $validator = Validator::make($request->all(), [
+                'LoanType'  => 'required',
+                'AccountMoney'  => 'required',
+                'RongInterest'  => 'required',
+                'RongHandFee'  => 'required',
+                'LoanDate'  => 'required',
+                'LoanInterest'  => 'required',
+                'ExtCId'  => 'required',//新增子公司和金融机构4个字段
+                'ExtCName'  => 'required',
+                'ExtFundSourceId'  => 'required',
+                'ExtFundSourceName'  => 'required',
+            ], [
+                'LoanType.*'  => 'LoanType#为必填字段',
+                'AccountMoney.*'  => 'AccountMoney#为必填字段',
+                'RongInterest.*'  => 'RongInterest#为必填字段',
+                'RongHandFee.*'  => 'RongHandFee#为必填字段',
+                'LoanDate.*'  => 'LoanDate#为必填字段',
+                'LoanInterest.*'  => 'LoanInterest#为必填字段',
+                'ExtCId.*'  => 'ExtCId#为必填字段',//新增子公司和金融机构4个字段
+                'ExtCName.*'  => 'ExtCName#为必填字段',
+                'ExtFundSourceId.*'  => 'ExtFundSourceId#为必填字段',
+                'ExtFundSourceName.*'  => 'ExtFundSourceName#为必填字段',
+            ]);
+        }else{
+            //use Illuminate\Support\Facades\Validator;
+            $validator = Validator::make($request->all(), [
+                'LoanType'  => 'required',
+                'AccountMoney'  => 'required',
+                'LoanDate'  => 'required',
+                'LoanInterest'  => 'required',
+                'ExtCId'  => 'required',//新增子公司和金融机构4个字段
+                'ExtCName'  => 'required',
+                'ExtFundSourceId'  => 'required',
+                'ExtFundSourceName'  => 'required',
+            ], [
+                'LoanType.*'  => 'LoanType#为必填字段',
+                'AccountMoney.*'  => 'AccountMoney#为必填字段',
+                'LoanDate.*'  => 'LoanDate#为必填字段',
+                'LoanInterest.*'  => 'LoanInterest#为必填字段',
+                'ExtCId.*'  => 'ExtCId#为必填字段',//新增子公司和金融机构4个字段
+                'ExtCName.*'  => 'ExtCName#为必填字段',
+                'ExtFundSourceId.*'  => 'ExtFundSourceId#为必填字段',
+                'ExtFundSourceName.*'  => 'ExtFundSourceName#为必填字段',
+            ]);
+        }
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        //2.1 验证类型
+        if(!in_array($inputs['LoanType'], [1,2,3])){
+            return wmResponse()->code(-101, '请选择类型！')->json();
+        }
+
+        //3 业务逻辑
+        $inputs['LoanDate'] = strtotime($inputs['LoanDate']);
+        $_data = $this->loanLogic->create($inputs, $this->users, $this->platform);
+
+        //4 返回
+        //监控接口请求时间
+        //$this->_recordLongApiForApiStatistics($request->url(),  array('start' => $this->microRangeStart, 'end' => _nowMicroTime()));
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($_data);
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getList(Request $request){
+        //1 接收参数
+        $inputs['LoanDateStart'] = !empty($request->LoanDateStart) ? $request->LoanDateStart: '';
+        $inputs['LoanDateEnd'] = !empty($request->LoanDateEnd) ? $request->LoanDateEnd: '';
+        $inputs['LoanType'] = !empty($request->LoanType) ? $request->LoanType: '';
+        $inputs['LoanStatus'] = !empty($request->LoanStatus) ? $request->LoanStatus: '';
+        //1.2 新增子公司ID和金融机构ID筛选
+        $inputs['ExtCId'] = !empty($request->ExtCId) ? $request->ExtCId: '';
+        $inputs['ExtFundSourceId'] = !empty($request->ExtFundSourceId) ? $request->ExtFundSourceId: '';
+        $inputs['Page'] = !empty($request->Page) ? $request->Page: 1;
+        //2 验证参数
+        //3 业务逻辑
+        $dataRes = $this->loanLogic->getList($inputs, $this->users, $this->platform);
+
+        //监控接口请求时间
+        //$this->_recordLongApiForApiStatistics($request->url(),  array('start' => $this->microRangeStart, 'end' => _nowMicroTime()));
+        //4 输出
+        $TotalPage = ceil($dataRes['_total']/BaseConst::PAGE_NUM);
+        return wmResponse()->json([
+            'Total' => $dataRes['_total'], 'Page' => $inputs['Page'], 'PageNum' => BaseConst::PAGE_NUM, 'TotalPage' => $TotalPage, 'List' => $dataRes['_data']
+        ]);
+    }
+
+    public function modify(Request $request){
+        //1 接收参数
+        $inputs['Id'] = !empty($request->Id) ? $request->Id: '';
+        $inputs['LoanType'] = !empty($request->LoanType) ? $request->LoanType: '';
+        $inputs['AccountMoney'] = !empty($request->AccountMoney) ? $request->AccountMoney: '';
+        $inputs['RongInterest'] = !empty($request->RongInterest) ? $request->RongInterest: '';
+        $inputs['RongHandFee'] = !empty($request->RongHandFee) ? $request->RongHandFee: '';
+        $inputs['LoanDate'] = !empty($request->LoanDate) ? $request->LoanDate: '';
+        $inputs['LoanInterest'] = FinanceConst::LOAN_INTERESR;
+
+        //2 验证参数
+        //use Illuminate\Support\Facades\Validator;
+        $validator = Validator::make($request->all(), [
+            'Id'  => 'required',
+            'LoanType'  => 'required',
+            'AccountMoney'  => 'required',
+            'RongInterest'  => 'required',
+            'RongHandFee'  => 'required',
+            'LoanDate'  => 'required',
+            'LoanInterest'  => 'required',
+        ], [
+            'Id.*'  => 'Id#为必填字段',
+            'LoanType.*'  => 'LoanType#为必填字段',
+            'AccountMoney.*'  => 'AccountMoney#为必填字段',
+            'RongInterest.*'  => 'RongInterest#为必填字段',
+            'RongHandFee.*'  => 'RongHandFee#为必填字段',
+            'LoanDate.*'  => 'LoanDate#为必填字段',
+            'LoanInterest.*'  => 'LoanInterest#为必填字段',
+        ]);
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        //2.1 验证类型
+        if(!in_array($inputs['LoanType'], [1,2,3])){
+            return wmResponse()->code(-101, '请选择类型！')->json();
+        }
+        //2.2 验证是否有效资金
+        $loanDetail = $this->loanLogic->getDetail($inputs['Id']);
+        if(!$loanDetail){
+            return wmResponse()->code(BaseConst::NOT_IN_DB_CODE, BaseConst::NOT_IN_DB_MSG)->json();
+        }
+
+        //3 业务逻辑
+        $inputs['LoanDate'] = strtotime($inputs['LoanDate']);
+        $_data = $this->loanLogic->modify($inputs, $loanDetail);
+
+        //4 返回
+        //监控接口请求时间
+        //$this->_recordLongApiForApiStatistics($request->url(),  array('start' => $this->microRangeStart, 'end' => _nowMicroTime()));
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($_data);
+    }
+
+    public function getDetail(Request $request){
+        $inputs['Id'] = !empty($request->Id) ? $request->Id: '';
+        //use Illuminate\Support\Facades\Validator;
+        $validator = Validator::make($request->all(), [
+            'Id'  => 'required',
+        ], [
+            'Id.*'  => 'Id#为必填字段',
+        ]);
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        $detail = $this->loanLogic->getDetail($inputs['Id']);
+
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($detail);
+    }
+
+    public function delete(Request $request){
+        $inputs['Id'] = !empty($request->Id) ? $request->Id: '';
+        //use Illuminate\Support\Facades\Validator;
+        $validator = Validator::make($request->all(), [
+            'Id'  => 'required',
+        ], [
+            'Id.*'  => 'Id#为必填字段',
+        ]);
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        //2.1 验证是否有效资金
+        $loanDetail = $this->loanLogic->getDetail($inputs['Id']);
+        if(!$loanDetail){
+            return wmResponse()->code(BaseConst::NOT_IN_DB_CODE, BaseConst::NOT_IN_DB_MSG)->json();
+        }
+        $detail = $this->loanLogic->delete($inputs['Id']);
+
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($detail);
+    }
+
+    public function audit(Request $request){
+        $inputs['Id'] = !empty($request->Id) ? $request->Id: '';
+        //use Illuminate\Support\Facades\Validator;
+        $validator = Validator::make($request->all(), [
+            'Id'  => 'required',
+        ], [
+            'Id.*'  => 'Id#为必填字段',
+        ]);
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        //2.1 验证是否有效资金
+        $loanDetail = $this->loanLogic->getDetail($inputs['Id']);
+        if(!$loanDetail){
+            return wmResponse()->code(BaseConst::NOT_IN_DB_CODE, BaseConst::NOT_IN_DB_MSG)->json();
+        }
+        $detail = $this->loanLogic->audit($inputs['Id']);
+
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($detail);
+    }
+
+    /**
+     * 资金成本报表 @todo 后续视情况会迁移到单独控制器
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getListForReport(Request $request){
+        //1 接收参数
+        $inputs['LoanDateStart'] = !empty($request->LoanDateStart) ? $request->LoanDateStart: '';
+        $inputs['LoanDateEnd'] = !empty($request->LoanDateEnd) ? $request->LoanDateEnd: '';
+        $inputs['LoanType'] = !empty($request->LoanType) ? $request->LoanType: '';
+        $inputs['Page'] = !empty($request->Page) ? $request->Page: 1;
+        $users = array();
+        $platform = '';
+        //2 验证参数
+        //3 业务逻辑
+        $dataRes = $this->loanLogic->getListForReport($inputs, $users, $platform);
+        //监控接口请求时间
+        //$this->_recordLongApiForApiStatistics($request->url(),  array('start' => $this->microRangeStart, 'end' => _nowMicroTime()));
+        //4 输出
+        $TotalPage = ceil($dataRes['_total']/BaseConst::PAGE_NUM);
+
+        //_dataSum
+        return wmResponse()->json([
+            'Total' => $dataRes['_total'], 'Page' => $inputs['Page'], 'PageNum' => BaseConst::PAGE_NUM, 'TotalPage' => $TotalPage, 'ListSum' => $dataRes['_dataSum'], 'List' => $dataRes['_data']
+        ]);
+    }
+
+    public function getDetailForReport(Request $request){
+        $inputs['Id'] = !empty($request->Id) ? $request->Id: '';
+        //use Illuminate\Support\Facades\Validator;
+        $validator = Validator::make($request->all(), [
+            'Id'  => 'required',
+        ], [
+            'Id.*'  => 'Id#为必填字段',
+        ]);
+        if ($validator->fails()) {
+            return wmResponse()->code(BaseConst::ERROR_CODE, $validator->errors()->first())->json();
+        }
+        $detail = $this->loanLogic->getDetailForReport($inputs['Id']);
+
+        return wmResponse()->code(BaseConst::SUCCESS_CODE, BaseConst::SUCCESS_CODE_MSG)->json($detail);
+    }
+
+}

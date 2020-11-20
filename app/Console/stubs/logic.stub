@@ -1,0 +1,170 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * @author tann1013@hotmail.com
+ * @date 2020-04-16
+ * @version 1.0
+ */
+
+namespace App\Logics\Api;
+
+
+use App\ConstDir\BaseConst;
+use App\ConstDir\FinanceConst;
+use App\Logics\BaseLogic;
+use App\Models\FinanceBillModel;
+use App\Models\FinanceLadeinfoModel;
+use App\Models\FinanceLoanModel;
+use App\Models\FinanceLoanRepayModel;
+use App\Models\LadeinfoModel;
+use App\Service\Status\LoanStatus;
+use App\Service\Status\LoanType;
+use App\Service\Status\State;
+use App\Service\Status\TakeStatus;
+use Illuminate\Support\Facades\DB;
+
+class FinanceBillLogic extends BaseLogic
+{
+    public function __construct()
+    {
+        $this->financeBillModel = new FinanceBillModel();
+
+    }
+
+    /**
+     * @param $inputs
+     */
+    public function create($inputs, $users, $platform){
+        try{
+            //1 组装数据
+            //1.2 添加人信息
+            $inputs['InUserId'] = $users['Id'];
+            $inputs['InUserName'] = $users['Name'];
+            //1.1 格式化
+            //关键业务记录日志v1.0
+            $ParamsStr = json_encode($inputs);
+            $this->writeLogV2('FinanceBillLogic', $ParamsStr, 'FinanceBillLogic/create_params');
+
+            //2入库
+            $Id = $this->financeBillModel->insertData($inputs);
+        }catch (\Exception $e){
+            $this->writeLogV2('FinanceBillLogic', $e->getMessage(), 'FinanceBillLogic/create_err');
+            return false;
+        }
+        return $Id;
+    }
+
+    /**
+     * @param $inputs
+     * @param $users
+     * @param $platform
+     * @return array
+     */
+    public function getList($inputs, $users, $platform){
+        //1 组装筛选条件
+        $whereSql = array();
+        if(!empty($inputs['TakeDateStart']) && !empty($inputs['TakeDateEnd'])){
+            $dateRange = _date2dateHis($inputs['TakeDateStart'], $inputs['TakeDateEnd']);
+            $whereSql['TakeDate >='] = strtotime($dateRange['StartDate']);
+            $whereSql['TakeDate <='] = strtotime($dateRange['EndDate']);
+        }
+        if(!empty($inputs['GetFundSourceId'])){
+            $whereSql['GetFundSourceId'] = $inputs['GetFundSourceId'];
+        }
+
+        //1.2区分平台
+        //$this->_toolsFilterListWithFundSource($whereSql, $users, $platform);
+
+
+        //1.2 设置排序
+        $orderBy = 'CreatedTime DESC';
+
+        //2 查询
+        $whereSql['State'] = State::ENABLE;
+        $pageSize = BaseConst::PAGE_NUM;
+        $page = $inputs['Page'];
+        $count = $this->financeBillModel->count($whereSql);
+        $list = $this->financeBillModel->getList(FinanceBillModel::BASE_COLUMN_STR, $whereSql, $orderBy, null, $pageSize, ($page - 1) * $pageSize);
+        //3 处理数据
+        if($list){
+            foreach ($list as &$item){
+                $item->TakeDateStr = date('Y-m-d', $item->TakeDate);
+                $item->TakeStatusCn = TakeStatus::MAPPS[$item->TakeStatus];
+            }
+        }
+        //4 返回
+        return array(
+            '_data' => $list,
+            '_total' => $count
+        );
+    }
+
+    public function getDetail($Id){
+        $WhereSql['Id'] = $Id;
+        $detail = $this->financeBillModel->getOne(FinanceBillModel::BASE_COLUMN_STR, $WhereSql);
+        if($detail){
+            $detail->TakeDateStr = date('Y-m-d', $detail->TakeDate);
+            $detail->TakeStatusCn = TakeStatus::MAPPS[$detail->TakeStatus];
+        }
+        return $detail;
+    }
+
+    public function getDetailNotOther($Id){
+        $WhereSql['Id'] = $Id;
+        $detail = $this->financeBillModel->getOne(financeBillModel::BASE_COLUMN_STR, $WhereSql);
+        return $detail;
+    }
+
+    public function modify($inputs, $loanDetail){
+        return $this->financeBillModel->modifyById($inputs, $inputs['Id']);
+    }
+    public function delete($Id){
+        return $this->financeBillModel->deleteById($Id);
+    }
+
+    public function audit($Id){
+        return $this->financeBillModel->auditById($Id);
+    }
+
+    public function getCustomerList($inputs, $users, $platform){
+        $WhereSqlArr = array();
+        if(!empty($inputs['Keywords'])){
+            $WhereSqlArr[] = ['info.LI_BuyerComp', 'like', '%'.$inputs['Keywords'].'%'];
+        }
+        $list = $this->ladeinfoModel->getCustomerList($WhereSqlArr);
+        return $list;
+    }
+
+    /**
+     * @param $whereSql
+     * @param $users
+     * @param $platform
+     */
+    private function _toolsFilterListWithFundSource(&$whereSql, $users, $platform){
+        if($platform==FinanceConst::PLATFORM_SAAS){
+            $whereSql['ExtFundSourceId'] = $users['Id'];
+        }else{
+        }
+    }
+
+    /**
+     * @param $inputs
+     * @param $users
+     * @param $platform
+     * @return array
+     */
+    public function getListForReport($inputs, $users, $platform, $isExport=false, $isShowSp=true){
+    }
+
+    public function getDetailForReport($Id){
+    }
+
+    /**
+     * @param $dataRes
+     * @return mixed
+     */
+    public function _toolsGetCellData($dataRes){
+    }
+
+
+}

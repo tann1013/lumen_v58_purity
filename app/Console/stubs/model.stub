@@ -1,0 +1,74 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * @author tann1013@hotmail.com
+ * @date 2020-04-16
+ * @version 1.0
+ */
+
+namespace App\Models;
+
+
+use App\Service\Status\LoanStatus;
+use App\Service\Status\State;
+
+class FinanceLoanModel extends BaseModel{
+
+    protected $table = 'tf_finance_loan';
+
+    protected $primaryKey = 'Id';
+
+    const CREATED_AT = 'CreatedTime';
+
+    const BASE_COLUMN_STR = 'Id,
+    LoanType,
+    RongInterest,
+    RongHandFee,
+    LoanDate,
+    AccountMoney,
+    AccountMoneyRepay,
+    LoanInterest,
+    ExtCId AS ExtCId,
+    ExtCName AS ExtCName,
+    ExtFundSourceId AS ExtFundSourceId,
+    ExtFundSourceName AS ExtFundSourceName,
+    LoanStatus';
+
+
+    public function getDriverListWithWlsCompanyId($wlsCompanyId){
+        $list = $this->from('tf_finance_loan AS loan')
+            ->where('common.CD_LC_Id', $wlsCompanyId)
+            ->get();
+        return $list;
+    }
+
+    public function deleteById($Id){
+        $ToUpdate = array(
+            'State' => State::DISABLE,
+            'DeletedTime' => time()
+        );
+        return $this->updateData($ToUpdate, ['Id' => $Id]);
+    }
+
+    public function auditById($Id){
+        $ToUpdate = array(
+            'LoanStatus' => LoanStatus::TO_REPAY,
+            'UpdatedTime' => time()
+        );
+        return $this->updateData($ToUpdate, ['Id' => $Id]);
+    }
+
+    public function modifyById($Params, $Id){
+        unset($Params['Id']);
+        $ToUpdate = array(
+            'LoanType' => $Params['LoanType'],
+            'AccountMoney' => $Params['AccountMoney'],
+            'RongInterest' => $Params['RongInterest'],
+            'LoanDate' => $Params['LoanDate'],
+            'UpdatedTime' => time()
+        );
+        return $this->updateData($ToUpdate, ['Id' => $Id]);
+    }
+
+
+}
