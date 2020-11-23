@@ -1,0 +1,15 @@
+@author tj
+一、环境准备
+1、docker 部署oracle服务
+2、本地PHP环境安装oci8
+
+
+//启动oracel服务
+docker exec -it oracle_11g bash
+
+二、lumen安装laravel扩展
+composer require yajra/laravel-oci8:v5.8.1
+"yajra/laravel-oci8": "v5.8.1"
+
+
+

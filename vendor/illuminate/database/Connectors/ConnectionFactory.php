@@ -11,6 +11,10 @@ use Illuminate\Database\SQLiteConnection;
 use Illuminate\Database\PostgresConnection;
 use Illuminate\Database\SqlServerConnection;
 use Illuminate\Contracts\Container\Container;
+//新增oracle支持
+use Yajra\Oci8\Connectors\OracleConnector;
+use Yajra\Oci8\Oci8Connection;
+
 
 class ConnectionFactory
 {
@@ -246,6 +250,9 @@ class ConnectionFactory
                 return new SQLiteConnector;
             case 'sqlsrv':
                 return new SqlServerConnector;
+                //新增Oracle
+            case 'oracle':
+                return new OracleConnector;
         }
 
         throw new InvalidArgumentException("Unsupported driver [{$config['driver']}]");
@@ -268,7 +275,6 @@ class ConnectionFactory
         if ($resolver = Connection::getResolver($driver)) {
             return $resolver($connection, $database, $prefix, $config);
         }
-
         switch ($driver) {
             case 'mysql':
                 return new MySqlConnection($connection, $database, $prefix, $config);
@@ -278,6 +284,9 @@ class ConnectionFactory
                 return new SQLiteConnection($connection, $database, $prefix, $config);
             case 'sqlsrv':
                 return new SqlServerConnection($connection, $database, $prefix, $config);
+                //新增oracle支持
+            case 'oracle':
+                return new Oci8Connection($connection, $database, $prefix, $config);
         }
 
         throw new InvalidArgumentException("Unsupported driver [{$driver}]");

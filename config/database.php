@@ -26,7 +26,10 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql_master'),
+    //'default' => env('DB_CONNECTION', 'mysql_master'),
+
+    //新增oracle支持
+    'default' => env('DB_CONNECTION', 'oracle'),
 
     /*
     |--------------------------------------------------------------------------
@@ -45,6 +48,19 @@ return [
     */
 
     'connections' => [
+        //新增Oracle
+        'oracle' => [
+            'driver'        => 'oracle',
+            'tns'           => env('DB_TNS', ''),
+            'host'          => env('DB_HOST', '127.0.0.1'),
+            'port'          => env('DB_PORT', '1521'),
+            'database'      => env('DB_DATABASE', 'helowin'),
+            'username'      => env('DB_USERNAME', 'system'),
+            'password'      => env('DB_PASSWORD', 'oracle'),
+            'charset'       => env('DB_CHARSET', 'AL32UTF8'),
+            'prefix'        => env('DB_PREFIX', ''),
+            'prefix_schema' => env('DB_SCHEMA_PREFIX', ''),
+        ],
 
         'mysql_master' => [
             'driver'    => 'mysql',
@@ -160,5 +176,4 @@ return [
             'database' => 1,
         ]
     ],
-
 ];

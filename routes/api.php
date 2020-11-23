@@ -7,7 +7,12 @@ $router->get('/', function () use ($router) {
 });
 
 $router->get('/info', function () use ($router) {
-    return phpinfo();
+    echo phpinfo();die;
+    //var_dump(22);die;
+    //$openList = \Illuminate\Support\Facades\DB::connection('oracle')->select("SELECT * FROM HR.JOBS");
+    //Call to undefined function Yajra\Pdo\oci_connect() @2020-11-23 确认接口形式给数据，暂时不研究
+    //var_dump($openList);
+
 });
 $router->group(['middleware' => ['authToken']], function () use ($router) {
     /**

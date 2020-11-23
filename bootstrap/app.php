@@ -76,7 +76,7 @@ $app->routeMiddleware([
 |
 | Here we will register all of the application's service providers which
 | are used to bind services into the container. Service providers are
-| totally optional, so you are not required to uncomment this line.
+| totally optional, so you are not rJenssegers\Mongodb\MongodbServiceProviderequired to uncomment this line.
 |
 */
 
@@ -87,7 +87,7 @@ $app->register(App\Providers\AuthServiceProvider::class);
 //---注册RedisServiceProvider
 $app->register(Illuminate\Redis\RedisServiceProvider::class);
 //--注册MongoDb
-$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+#$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 //新增Mongo的匿名映射#Mongo
 //$app->alias(['Mongo'=>'Jenssegers\Mongodb\MongodbServiceProvider::class']);
 
@@ -95,9 +95,11 @@ $app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 $app->register(Wn\Generators\CommandsServiceProvider::class);
 
 //新增maatwebsite/excel~3.1注册
-$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
+#$app->register(Maatwebsite\Excel\ExcelServiceProvider::class);
 
-
+//新增oracel支持
+//Yajra\Oci8\Oci8ServiceProvider::class,
+$app->register(Yajra\Oci8\Oci8ServiceProvider::class);
 
 
 $app->withFacades();
@@ -128,7 +130,7 @@ $app->router->group([
 });
 
 //加载配置文件
-$app->configure('cnf_testdata');
-$app->configure('cnf_companys');
+//$app->configure('cnf_testdata');
+//$app->configure('cnf_companys');
 
 return $app;
